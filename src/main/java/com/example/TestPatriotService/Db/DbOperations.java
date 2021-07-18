@@ -51,12 +51,16 @@ public class DbOperations {
         try (Connection conn = getConnection()) {
             Statement stmt = conn.createStatement();
             createTablePerson(conn);
-            sfidSimCounter = getCountOfRowsInDb() + 1;
+            if(getCountOfRowsInDb("users") == 0){
+                createTableUsers(conn);
+            }
+            sfidSimCounter = getCountOfRowsInDb("persons") + 1;
             System.out.println(sfidSimCounter - 1);
-            if (conn != null && getCountOfRowsInDb() < 5) {
+            if (conn != null && getCountOfRowsInDb("persons") < 5) {
                 String sqlInsert = "insert into persons (lastName, phone, sfid) values ('Petrov', '88005552525', '0x000000000" + sfidSimCounter + "')";
                 stmt.execute(sqlInsert);
             }
+
             ResultSet set = stmt.executeQuery("SELECT * FROM persons");
             ArrayList<Person> persons = new ArrayList<>();
             while (set.next()){
@@ -65,6 +69,13 @@ public class DbOperations {
                         set.getString("email")));
             }
             System.out.println(persons.toString());
+
+            set = stmt.executeQuery("SELECT * FROM users");
+            ArrayList<User> users = new ArrayList<>();
+            while (set.next()){
+                users.add(new User(set.getInt("id"), set.getString("username"), set.getString("password")));
+            }
+            System.out.println(users.toString());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -88,13 +99,62 @@ public class DbOperations {
         }
     }
 
+    public static void createTableUsers(Connection con) {
+        String sql = "CREATE TABLE IF NOT EXISTS users (\n"
+                + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
+                + "	username text NOT NULL UNIQUE,\n"
+                + "	password text\n"
+                + ");";
+        try {
+            Statement stmt = con.createStatement();
+            stmt.execute(sql);
+            insertUser(new User("sf", "pass"));
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
+    public static boolean insertUser(User u) {
+        PreparedStatement pstmt = null;
+        boolean result = false;
+        try {
+            pstmt = getConnection().prepareStatement("insert into users (username, password) " +
+                    "                                           values (?, ?)");
+            pstmt.setString(1, u.getUsername());
+            pstmt.setString(2, u.getPassword());
+            result = pstmt.execute();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return result;
+    }
+
+    public static User selectUserByLogin(String username) {
+        PreparedStatement stmt;
+        User record = null;
+        String selectSql = "SELECT * FROM users WHERE username = ?";
+        try {
+            stmt = getConnection().prepareStatement(selectSql);
+            stmt.setString(1, username);
+            ResultSet set = stmt.executeQuery();
+            while (set.next()){
+                record = new User(set.getInt("id"), set.getString("username"), set.getString("password"));
+            }
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            record = null;
+        }
+        return record;
+    }
+
     private static Connection createConnection() throws SQLException {
         String url = "jdbc:sqlite:" + DB_PATH;
         return DriverManager.getConnection(url);
     }
 
     //Person(int id, String firstName, String lastName, String midName, String phone, String sfId, String email)
-    public static boolean insert(Person r) {
+    public static boolean insertPerson(Person r) {
         PreparedStatement pstmt = null;
         boolean result = false;
         try {
@@ -119,7 +179,7 @@ public class DbOperations {
         try {
             stmt = getConnection().createStatement();
             ResultSet set = stmt.executeQuery("SELECT * FROM persons");
-            records = new Person[DbOperations.getCountOfRowsInDb()];
+            records = new Person[DbOperations.getCountOfRowsInDb("persons")];
             int i = 0;
             while (set.next()) {
                 records[i] = new Person(set.getInt("id"), set.getString("firstName"), set.getString("lastName"),
@@ -134,8 +194,14 @@ public class DbOperations {
         return records;
     }
 
-    public static int getCountOfRowsInDb() throws SQLException {
+    public static int getCountOfRowsInDb(String tableName) throws SQLException {
         Statement stmt = getConnection().createStatement();
-        return stmt.executeQuery("SELECT COUNT(*) FROM persons").getInt(1);
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM ");
+        sql.append(tableName);
+        try {
+            return stmt.executeQuery(sql.toString()).getInt(1);
+        }catch (SQLException throwables){
+            return 0;
+        }
     }
 }

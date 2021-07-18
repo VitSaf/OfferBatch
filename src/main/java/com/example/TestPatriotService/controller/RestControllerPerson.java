@@ -2,11 +2,10 @@ package com.example.TestPatriotService.controller;
 
 import com.example.TestPatriotService.Db.DbOperations;
 import com.example.TestPatriotService.Db.Person;
+import com.example.TestPatriotService.security.JWTService;
+import com.example.TestPatriotService.security.SimpleAuth;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,31 +13,48 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping(value = "persons", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping("/persons")
 public class RestControllerPerson {
 
-    @RequestMapping(value = "/all", method = RequestMethod.GET)
-    public Person[] getAllPersons(){
-        return DbOperations.selectAll();
+    @GetMapping("/all")
+    public Person[] getAllPersons(String token){
+        if(SimpleAuth.checkToken(token)) return DbOperations.selectAll();
+        return null;
+    }
+//curl -d "username=sf&password=pass" -X POST http://localhost:8080/persons/jwt_auth
+    @PostMapping(path="/jwt_auth")
+    public String getToken(@RequestParam String username, @RequestParam String password) {
+        String token;
+        System.out.println(username + " " + password);
+        if(SimpleAuth.checkAuth(username, password)){
+            token = JWTService.createJWT(username, "subject");
+        }else token = null;
+        return token;
     }
 
-    @RequestMapping(value = "/by_sfid", method = RequestMethod.GET)
-    public ArrayList<Person> getPersonBySfid(String sfid) {
-        return DbOperations.selectPersonBySfid(sfid);
-
+    @GetMapping("/by_sfid")
+    public ArrayList<Person> getPersonBySfid(@RequestBody String sfid, String token) {
+        if(SimpleAuth.checkToken(token))
+            return DbOperations.selectPersonBySfid(sfid);
+        return null;
     }
 
-    @RequestMapping(value = "/create_person", method = RequestMethod.POST)
-    public Boolean createPerson(@RequestBody Person newPerson) {
-        return DbOperations.insert( newPerson);
+    @PostMapping("/create_person")
+    public Boolean createPerson(@RequestBody Person newPerson, String token) {
+        if(SimpleAuth.checkToken(token))
+            return DbOperations.insertPerson( newPerson);
+        return null;
     }
 
-    @RequestMapping(value = "/create_persons", method = RequestMethod.POST)
-    public Map<String,Boolean> createPersons(@RequestBody List<Person> newPersons) {
-        Map<String,Boolean> resultMap = new HashMap<String, Boolean>();
-        for(Person p : newPersons) {
-            resultMap.put(p.getSfId(), DbOperations.insert(p));
+    @PostMapping("/create_persons")
+    public Map<String,Boolean> createPersons(@RequestBody List<Person> newPersons, String token) {
+        if(SimpleAuth.checkToken(token)){
+            Map<String,Boolean> resultMap = new HashMap<String, Boolean>();
+            for(Person p : newPersons) {
+                resultMap.put(p.getSfId(), DbOperations.insertPerson(p));
+            }
+            return resultMap;
         }
-        return resultMap;
+        return null;
     }
 }
