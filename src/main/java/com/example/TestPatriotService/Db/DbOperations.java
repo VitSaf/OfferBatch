@@ -138,6 +138,4 @@ public class DbOperations {
         Statement stmt = getConnection().createStatement();
         return stmt.executeQuery("SELECT COUNT(*) FROM persons").getInt(1);
     }
-
-
 }
