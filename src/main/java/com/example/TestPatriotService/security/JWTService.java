@@ -19,6 +19,7 @@ import io.jsonwebtoken.security.Keys;
 /*
     Our simple static class that demonstrates how to create and decode JWTs.
  */
+//сгенерить ключ под RS256
 
 public class JWTService {
     private static Key KEY_TO_PARSE;
@@ -35,15 +36,19 @@ public class JWTService {
         SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.RS256;
 //You use the private key (keyPair.getPrivate()) to create a JWS and the public key (keyPair.getPublic()) to parse/verify a JWS.
         KeyPair keyPair = Keys.keyPairFor(signatureAlgorithm);
-        KEY_TO_PARSE = keyPair.getPublic();
+        KEY_TO_PARSE = keyPair.getPublic();//Халявы с автогенерацией видимо не будет, и нужно генерить ручками
+        Key signingKey = keyPair.getPrivate();
 
         long nowMillis = System.currentTimeMillis();
         Date now = new Date(nowMillis);
 
+
         //We will sign our JWT with our ApiKey secret
         //byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(SECRET_KEY);
         //new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
-        Key signingKey = keyPair.getPrivate();
+        
+
+
         HashMap<String, Object> header = new HashMap<>();
         header.put("alg", "RS256");
         header.put("typ", "JWT");
