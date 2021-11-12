@@ -1,14 +1,16 @@
 public with sharing class OffersBatchUtils {
     private OffersBatchUtils() {}
 
-    public static Offer__c[] findExpiredOffers(List<Offer__c> offers) {
-        final Date today = Date.today();
+    /**
+     * Changes status of expired offers
+     * offers - list of offers from Batch.start method with incorrect statuses
+     * return - list of expired offers with correct status
+     */
+    public static Offer__c[] changeExpiredOffersStatus(List<Offer__c> offers) {
         Offer__c[] expiredOffers = new List <Offer__c>();
         for (Offer__c offer : offers) {
-            if (offer.Expiration_date__c < today) {
-                offer.Status__c = 'Expired';
-                expiredOffers.add(offer);
-            }
+            offer.Status__c = 'Expired';
+            expiredOffers.add(offer);
         }
         return expiredOffers;
     }
