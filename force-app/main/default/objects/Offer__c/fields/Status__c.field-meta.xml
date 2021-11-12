@@ -26,9 +26,9 @@
                 <label>Expired</label>
             </value>
             <value>
-                <fullName>Waiting for answer</fullName>
+                <fullName>Sent</fullName>
                 <default>false</default>
-                <label>Waiting for answer</label>
+                <label>Sent</label>
             </value>
         </valueSetDefinition>
     </valueSet>

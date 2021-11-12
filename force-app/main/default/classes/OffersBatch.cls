@@ -4,12 +4,12 @@
 If the Status field has the value of Sent after the expiration date,
 the Status needs to be changed to Expired.
 Implement a batch job which realizes this requirement.
-//https://login.salesforce.com/packaging/installPackage.apexp?p0=04t5g000000MFPz&isdtp=p1
+https://login.salesforce.com/packaging/installPackage.apexp?p0=04t5g000000MFPz&isdtp=p1
  */ 
 public without sharing class OffersBatch implements Database.Batchable<sObject> {
 
   public Database.QueryLocator start(Database.BatchableContext bc) {
-    String query = 'SELECT Id, CreatedById, Expiration_date__c, Status__c FROM Offer__c WHERE Status__c = \'Waiting for answer\''; 
+    String query = 'SELECT Id, CreatedById, Expiration_date__c, Status__c FROM Offer__c WHERE Status__c = \'Sent\''; 
     return Database.getQueryLocator(query);
   }
 

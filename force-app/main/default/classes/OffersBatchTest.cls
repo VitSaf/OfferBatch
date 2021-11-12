@@ -12,7 +12,7 @@ private class OffersBatchTest {
         Offer__c[] offers = new List <Offer__c>();
         for (Integer i = 1; i < recordsNum; i++) {
             offers.add(new Offer__c(Addressee__c = contacts[i].Id, Expiration_date__c = expDate, Salary__c = 500*i,
-            Status__c = 'Waiting for answer'));
+            Status__c = 'Sent'));
             expDate = expDate.addDays(1);
         }
         insert offers;
