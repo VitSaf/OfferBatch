@@ -11,6 +11,4 @@ public with sharing class OffersService {
     public static Id scheduleBatch() {
         return System.schedule('Cleasing offers', CRON_EXP, new OffersBatchScheduler());
     }
-
-
 }

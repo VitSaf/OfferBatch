@@ -38,7 +38,7 @@ private class OffersBatchTest {
             Test.startTest();
             Id jobId = OffersService.scheduleBatch();
             Test.stopTest();
-            CronTrigger cronInfo = [SELECT Id, CronExpression, TimesTriggered, NextFireTime 
+            CronTrigger cronInfo = [SELECT Id, CronExpression, TimesTriggered, NextFireTime
                     FROM CronTrigger WHERE Id = :jobId];
             System.assertEquals(OffersService.CRON_EXP, cronInfo.CronExpression);
         }

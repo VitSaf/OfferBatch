@@ -5,10 +5,10 @@ public with sharing class OffersBatchUtils {
         final Date today = Date.today();
         Offer__c[] expiredOffers = new List <Offer__c>();
         for (Offer__c offer : offers) {
-          if (offer.Expiration_date__c < today) {
-            offer.Status__c = 'Expired';
-            expiredOffers.add(offer);
-          }
+            if (offer.Expiration_date__c < today) {
+                offer.Status__c = 'Expired';
+                expiredOffers.add(offer);
+            }
         }
         return expiredOffers;
     }
